@@ -87,11 +87,15 @@ public class PullCommand implements BLauncherCmd {
 
         if (argList == null || argList.isEmpty()) {
             CommandUtil.printError(this.errStream, "no package given", "bal pull <package-name> ", false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
 
         if (argList.size() > 1) {
             CommandUtil.printError(this.errStream, "too many arguments", "bal pull <package-name> ", false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
 
@@ -110,6 +114,8 @@ public class PullCommand implements BLauncherCmd {
         if (moduleInfo.length != 2) {
             CommandUtil.printError(errStream, "invalid package name. Provide the package name with the organization ",
                                    USAGE_TEXT, false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
         orgName = moduleInfo[0];
@@ -126,6 +132,8 @@ public class PullCommand implements BLauncherCmd {
         } else {
             CommandUtil.printError(errStream, "invalid package name. Provide the package name with the organization ",
                                    USAGE_TEXT, false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
 
@@ -133,11 +141,15 @@ public class PullCommand implements BLauncherCmd {
         if (!validateOrgName(orgName)) {
             CommandUtil.printError(errStream, "invalid organization. Provide the package name with the organization ",
                                    USAGE_TEXT, false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
         if (!validatePackageName(packageName)) {
             CommandUtil.printError(errStream, "invalid package name. Provide the package name with the organization ",
                                    USAGE_TEXT, false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
         if (!version.equals(Names.EMPTY.getValue())) {
@@ -146,6 +158,8 @@ public class PullCommand implements BLauncherCmd {
                 SemanticVersion.from(version);
             } catch (ProjectException e) {
                 CommandUtil.printError(errStream, "invalid package version. " + e.getMessage(), USAGE_TEXT, false);
+                // Exit status, zero for OK, non-zero for error
+                Runtime.getRuntime().exit(1);
                 return;
             }
         }
@@ -158,6 +172,8 @@ public class PullCommand implements BLauncherCmd {
         try {
             createDirectories(packagePathInBalaCache);
         } catch (IOException e) {
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             throw createLauncherException(
                     "unexpected error occurred while creating package repository in bala cache: " + e.getMessage());
         }

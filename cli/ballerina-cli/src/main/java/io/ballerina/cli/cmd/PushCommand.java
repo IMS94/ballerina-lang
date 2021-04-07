@@ -110,6 +110,8 @@ public class PushCommand implements BLauncherCmd {
         if (helpFlag) {
             String commandUsageInfo = BLauncherCmd.getCommandUsageInfo(PUSH_COMMAND);
             outStream.println(commandUsageInfo);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(0);
             return;
         }
 
@@ -118,6 +120,8 @@ public class PushCommand implements BLauncherCmd {
             project = BuildProject.load(userDir);
         } catch (ProjectException e) {
             CommandUtil.printError(errStream, e.getMessage(), null, false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
 
@@ -134,6 +138,8 @@ public class PushCommand implements BLauncherCmd {
                         String errMsg = "unsupported repository '" + repositoryName + "' found. Only '" +
                                 ProjectConstants.LOCAL_REPOSITORY_NAME + "' repository is supported";
                         CommandUtil.printError(this.errStream, errMsg, null, false);
+                        // Exit status, zero for OK, non-zero for error
+                        Runtime.getRuntime().exit(1);
                         return;
                     }
 
@@ -147,15 +153,21 @@ public class PushCommand implements BLauncherCmd {
                         pushPackage(project, client, settings);
                     } catch (ProjectException | CentralClientException e) {
                         CommandUtil.printError(this.errStream, e.getMessage(), null, false);
+                        // Exit status, zero for OK, non-zero for error
+                        Runtime.getRuntime().exit(1);
                         return;
                     }
                 }
             } catch (ProjectException | SettingsTomlException e) {
                 CommandUtil.printError(this.errStream, e.getMessage(), null, false);
+                // Exit status, zero for OK, non-zero for error
+                Runtime.getRuntime().exit(1);
                 return;
             }
         } else {
             CommandUtil.printError(this.errStream, "too many arguments", "bal push ", false);
+            // Exit status, zero for OK, non-zero for error
+            Runtime.getRuntime().exit(1);
             return;
         }
 
