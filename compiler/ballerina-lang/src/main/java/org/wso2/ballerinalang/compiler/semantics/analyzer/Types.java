@@ -17,6 +17,7 @@
  */
 package org.wso2.ballerinalang.compiler.semantics.analyzer;
 
+import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.tools.diagnostics.DiagnosticCode;
 import io.ballerina.tools.diagnostics.Location;
 import org.ballerinalang.model.Name;
@@ -101,6 +102,7 @@ import org.wso2.ballerinalang.util.Lists;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -637,7 +639,9 @@ public class Types {
         int sourceTag = source.tag;
         int targetTag = target.tag;
 
-        if (isNeverTypeOrStructureTypeWithARequiredNeverMember(source)) {
+        Set<BType> visitedTypeSet = new HashSet<>();
+        visitedTypeSet.add(source);
+        if (isNeverTypeOrStructureTypeWithARequiredNeverMember(source, visitedTypeSet)) {
             return true;
         }
 
@@ -2934,7 +2938,9 @@ public class Types {
 
         if (lhsType.sealed) {
             for (BField field : rhsFields.values()) {
-                if (!isNeverTypeOrStructureTypeWithARequiredNeverMember(field.type)) {
+                Set<BType> visitedTypeSet = new HashSet<>();
+                visitedTypeSet.add(field.type);
+                if (!isNeverTypeOrStructureTypeWithARequiredNeverMember(field.type, visitedTypeSet)) {
                     return false;
                 }
             }
@@ -4218,8 +4224,10 @@ public class Types {
                     continue;
                 }
 
-                if (isNeverTypeOrStructureTypeWithARequiredNeverMember(effectiveRhsRecordRestFieldType) &&
-                        !isNeverTypeOrStructureTypeWithARequiredNeverMember(recordOneFieldType)) {
+                if (isNeverTypeOrStructureTypeWithARequiredNeverMember(effectiveRhsRecordRestFieldType,
+                        new HashSet<>(Arrays.asList(effectiveRhsRecordRestFieldType)))
+                        && !isNeverTypeOrStructureTypeWithARequiredNeverMember(recordOneFieldType,
+                        new HashSet<>(Arrays.asList(recordOneFieldType)))) {
                     return false;
                 }
 
@@ -5142,15 +5150,17 @@ public class Types {
         return BUnionType.create(null, new LinkedHashSet<>(nonNilTypes));
     }
 
-    boolean isNeverTypeOrStructureTypeWithARequiredNeverMember(BType type) {
+    boolean isNeverTypeOrStructureTypeWithARequiredNeverMember(BType type, Set<BType> visitedTypeSet) {
         switch (type.tag) {
             case TypeTags.NEVER:
                 return true;
             case TypeTags.RECORD:
                 for (BField field : ((BRecordType) type).fields.values()) {
                     // skip check for fields with self referencing type and not required fields.
-                    if (!isSameType(type, field.type) && Symbols.isFlagOn(field.symbol.flags, Flags.REQUIRED) &&
-                            isNeverTypeOrStructureTypeWithARequiredNeverMember(field.type)) {
+                    if ((SymbolFlags.isFlagOn(field.symbol.flags, SymbolFlags.REQUIRED) ||
+                            !SymbolFlags.isFlagOn(field.symbol.flags, SymbolFlags.OPTIONAL)) &&
+                            !visitedTypeSet.contains(field.type) &&
+                            isNeverTypeOrStructureTypeWithARequiredNeverMember(field.type, visitedTypeSet)) {
                         return true;
                     }
                 }
@@ -5159,11 +5169,17 @@ public class Types {
                 BTupleType tupleType = (BTupleType) type;
                 List<BType> tupleTypes = tupleType.tupleTypes;
                 for (BType mem : tupleTypes) {
-                    if (isNeverTypeOrStructureTypeWithARequiredNeverMember(mem)) {
+                    visitedTypeSet.add(tupleType);
+                    if (isNeverTypeOrStructureTypeWithARequiredNeverMember(mem, visitedTypeSet)) {
                         return true;
                     }
                 }
                 return false;
+            case TypeTags.ARRAY:
+                BArrayType arrayType = (BArrayType) type;
+                visitedTypeSet.add(arrayType.eType);
+                return arrayType.state != BArrayState.OPEN &&
+                        isNeverTypeOrStructureTypeWithARequiredNeverMember(arrayType.eType, visitedTypeSet);
             default:
                 return false;
         }
