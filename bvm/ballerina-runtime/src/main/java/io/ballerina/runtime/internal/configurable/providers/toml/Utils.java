@@ -18,9 +18,11 @@
 
 package io.ballerina.runtime.internal.configurable.providers.toml;
 
+import io.ballerina.runtime.api.Module;
 import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.internal.configurable.exceptions.ConfigException;
 import io.ballerina.toml.semantic.TomlType;
 import io.ballerina.toml.semantic.ast.TomlKeyValueNode;
 import io.ballerina.toml.semantic.ast.TomlNode;
@@ -64,7 +66,7 @@ public class Utils {
         }
     }
 
-     static TomlType getEffectiveTomlType(Type expectedType, String variableName) {
+    static TomlType getEffectiveTomlType(Type expectedType, String variableName) {
         TomlType tomlType;
         switch (expectedType.getTag()) {
             case TypeTags.INT_TAG:
@@ -90,20 +92,18 @@ public class Utils {
             case TypeTags.TABLE_TAG:
                 tomlType = TomlType.TABLE_ARRAY;
                 break;
+            case TypeTags.XML_ATTRIBUTES_TAG:
+            case TypeTags.XML_COMMENT_TAG:
+            case TypeTags.XML_ELEMENT_TAG:
+            case TypeTags.XML_PI_TAG:
+            case TypeTags.XML_TAG:
+            case TypeTags.XML_TEXT_TAG:
+                throw new ConfigException(CONFIG_TOML_TYPE_NOT_SUPPORTED, variableName, expectedType.toString());
             case TypeTags.INTERSECTION_TAG:
                 Type effectiveType = ((IntersectionType) expectedType).getEffectiveType();
-                switch (effectiveType.getTag()) {
-                    case TypeTags.XML_ATTRIBUTES_TAG:
-                    case TypeTags.XML_COMMENT_TAG:
-                    case TypeTags.XML_ELEMENT_TAG:
-                    case TypeTags.XML_PI_TAG:
-                    case TypeTags.XML_TAG:
-                    case TypeTags.XML_TEXT_TAG:
-                        throw new TomlConfigException(CONFIG_TOML_TYPE_NOT_SUPPORTED, variableName,
-                                                      effectiveType.toString());
-                }
+                return getEffectiveTomlType(effectiveType, variableName);
             default:
-                throw new TomlConfigException(CONFIG_TYPE_NOT_SUPPORTED, variableName, expectedType.toString());
+                throw new ConfigException(CONFIG_TYPE_NOT_SUPPORTED, variableName, expectedType.toString());
         }
         return tomlType;
     }
@@ -112,15 +112,19 @@ public class Utils {
         return typeTag <= TypeTags.BOOLEAN_TAG;
     }
 
+    static String getModuleKey(Module module) {
+        return module.getOrg() + "." + module.getName();
+    }
+
     static String getLineRange(TomlNode node) {
         if (node.location() == null) {
-            return CONFIG_FILE_NAME;
+            return "[" + CONFIG_FILE_NAME + "] ";
         }
         LineRange lineRange = node.location().lineRange();
         LineRange oneBasedLineRange = LineRange.from(
                 lineRange.filePath(),
                 LinePosition.from(lineRange.startLine().line() + 1, lineRange.startLine().offset() + 1),
                 LinePosition.from(lineRange.endLine().line() + 1, lineRange.endLine().offset() + 1));
-        return oneBasedLineRange.filePath() + ":" + oneBasedLineRange.toString();
+        return "[" + oneBasedLineRange.filePath() + ":" + oneBasedLineRange + "] ";
     }
 }
