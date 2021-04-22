@@ -861,6 +861,10 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
             return;
         }
 
+        if (varNode.typeNode != null) {
+            analyzeTypeNode(varNode.typeNode, env);
+        }
+
         // Here we create a new symbol environment to catch self references by keep the current
         // variable symbol in the symbol environment
         // e.g. int a = x + a;
@@ -878,6 +882,9 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
     }
 
     private void analyzeTypeNode(BLangType typeNode, SymbolEnv env) {
+        if (typeNode.getKind() == NodeKind.USER_DEFINED_TYPE) {
+            return;
+        }
         if (typeNode.getKind() == NodeKind.RECORD_TYPE && !((BLangRecordTypeNode) typeNode).analyzed) {
             analyzeDef(typeNode, env);
         }
@@ -904,8 +911,7 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
                 analyzeTypeNode(tableConstraintTypeNode, env);
                 break;
             default:
-                if (typeNode.type.tag == TypeTags.UNION &&
-                        typeNode.getKind() != NodeKind.USER_DEFINED_TYPE) {
+                if (typeNode.type.tag == TypeTags.UNION) {
                     List<BLangType> unionMemberTypes = ((BLangUnionTypeNode) typeNode).memberTypeNodes;
                     for (BLangType memType : unionMemberTypes) {
                         analyzeTypeNode(memType, env);
@@ -1554,7 +1560,14 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
         setTypeOfVarRefInAssignment(varRef);
         expType = varRef.type;
 
-        typeChecker.checkExpr(assignNode.expr, this.env, expType);
+        BType typeChecked = typeChecker.checkExpr(assignNode.expr, this.env, expType);
+
+        if (typeChecked != symTable.semanticError && varRef.getKind() == NodeKind.SIMPLE_VARIABLE_REF) {
+            BLangSimpleVarRef variableRef = (BLangSimpleVarRef) varRef;
+            if (variableRef.lhsVar && variableRef.type.tsymbol == null && variableRef.type.tag == TypeTags.TYPEDESC) {
+                dlog.error(variableRef.pos, DiagnosticErrorCode.INVALID_VARIABLE_REFERENCE);
+            }
+        }
 
         validateWorkerAnnAttachments(assignNode.expr);
 
