@@ -13549,7 +13549,8 @@ public class BallerinaParser extends AbstractParser {
      * @return Match guard
      */
     private STNode parseMatchGuard() {
-        switch (peek().kind) {
+        STToken nextToken = peek();
+        switch (nextToken.kind) {
             case IF_KEYWORD:
                 STNode ifKeyword = parseIfKeyword();
                 STNode expr = parseExpression(DEFAULT_OP_PRECEDENCE, true, false, true, false);
@@ -13557,7 +13558,7 @@ public class BallerinaParser extends AbstractParser {
             case RIGHT_DOUBLE_ARROW_TOKEN:
                 return STNodeFactory.createEmptyNode();
             default:
-                recover(peek(), ParserRuleContext.OPTIONAL_MATCH_GUARD);
+                recover(nextToken, ParserRuleContext.OPTIONAL_MATCH_GUARD);
                 return parseMatchGuard();
         }
     }
@@ -13616,7 +13617,8 @@ public class BallerinaParser extends AbstractParser {
      * @return Match pattern
      */
     private STNode parseMatchPattern() {
-        switch (peek().kind) {
+        STToken nextToken = peek();
+        switch (nextToken.kind) {
             case OPEN_PAREN_TOKEN:
             case NULL_KEYWORD:
             case TRUE_KEYWORD:
@@ -13642,13 +13644,14 @@ public class BallerinaParser extends AbstractParser {
             case ERROR_KEYWORD:
                 return parseErrorMatchPattern();
             default:
-                recover(peek(), ParserRuleContext.MATCH_PATTERN_START);
+                recover(nextToken, ParserRuleContext.MATCH_PATTERN_START);
                 return parseMatchPattern();
         }
     }
 
     private STNode parseMatchPatternListMemberRhs() {
-        switch (peek().kind) {
+        STToken nextToken = peek();
+        switch (nextToken.kind) {
             case PIPE_TOKEN:
                 return parsePipeToken();
             case IF_KEYWORD:
@@ -13656,7 +13659,7 @@ public class BallerinaParser extends AbstractParser {
                 // Returning null indicates the end of the match-patterns list
                 return null;
             default:
-                recover(peek(), ParserRuleContext.MATCH_PATTERN_LIST_MEMBER_RHS);
+                recover(nextToken, ParserRuleContext.MATCH_PATTERN_LIST_MEMBER_RHS);
                 return parseMatchPatternListMemberRhs();
         }
     }
@@ -13830,6 +13833,10 @@ public class BallerinaParser extends AbstractParser {
 
         while (!isEndOfMappingMatchPattern()) {
             STNode fieldMatchPatternMember = parseFieldMatchPatternMember();
+            if (fieldMatchPatternMember == null) {
+                break;
+            }
+            
             fieldMatchPatternList.add(fieldMatchPatternMember);
             fieldMatchPatternRhs = parseFieldMatchPatternRhs();
 
@@ -13855,6 +13862,10 @@ public class BallerinaParser extends AbstractParser {
             }
 
             STNode invalidField = parseFieldMatchPatternMember();
+            if (invalidField == null) {
+                break;
+            }
+            
             updateLastNodeInListWithInvalidNode(fieldMatchPatternList, invalidField,
                     DiagnosticErrorCode.ERROR_MATCH_PATTERN_AFTER_REST_MATCH_PATTERN);
             fieldMatchPatternRhs = parseFieldMatchPatternRhs();
@@ -13868,13 +13879,17 @@ public class BallerinaParser extends AbstractParser {
     }
 
     private STNode parseFieldMatchPatternMember() {
-        switch (peek().kind) {
+        STToken nextToken = peek();
+        switch (nextToken.kind) {
             case IDENTIFIER_TOKEN:
                 return parseFieldMatchPattern();
             case ELLIPSIS_TOKEN:
                 return parseRestMatchPattern();
+            case CLOSE_BRACE_TOKEN:
+                // null marks the end of field-match-patterns
+                return null;
             default:
-                recover(peek(), ParserRuleContext.FIELD_MATCH_PATTERN_MEMBER);
+                recover(nextToken, ParserRuleContext.FIELD_MATCH_PATTERNS_START);
                 return parseFieldMatchPatternMember();
         }
     }
