@@ -266,8 +266,15 @@ public class ClosureTest {
         Assert.assertEquals(((BInteger) returns[0]).intValue(), 60);
     }
 
-    @Test
-    public void errorConstructorInClosureTest() {
-        BRunUtil.invoke(compileResult, "errorConstructorInClosureTest");
+    @Test(description = "Test closure within resource function")
+    public void testClosureWithinResource() {
+        CompileResult result = BCompileUtil.compile("test-src/closures/closures_in_resource.bal");
+        Assert.assertEquals(result.getErrorCount(), 0);
+        BRunUtil.invoke(result, "testClosureWithinResource");
+    }
+
+    @Test(description = "Test error constructor with closure")
+    public void errorConstructorWithClosureTest() {
+        BRunUtil.invoke(compileResult, "errorConstructorWithClosureTest");
     }
 }
