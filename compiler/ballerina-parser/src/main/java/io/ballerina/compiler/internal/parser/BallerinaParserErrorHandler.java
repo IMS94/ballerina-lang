@@ -5157,6 +5157,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
             case OPEN_PARENTHESIS:
             case ARG_LIST_OPEN_PAREN:
             case PARENTHESISED_TYPE_DESC_START:
+            case ERROR_CONSTRUCTOR_RHS:
                 return SyntaxKind.OPEN_PAREN_TOKEN;
             case SEMICOLON:
                 return SyntaxKind.SEMICOLON_TOKEN;
@@ -5483,6 +5484,7 @@ public class BallerinaParserErrorHandler extends AbstractParserErrorHandler {
             case SERVICE_DECL_QUALIFIER:
                 return SyntaxKind.SERVICE_KEYWORD;
             default:
+                assert false : "Expected token kind not found";
                 return SyntaxKind.NONE;
         }
     }
