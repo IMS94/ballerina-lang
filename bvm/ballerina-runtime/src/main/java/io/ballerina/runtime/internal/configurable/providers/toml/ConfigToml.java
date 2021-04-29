@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.ballerina.runtime.internal.configurable.providers.toml.Utils.getOneBasedLineRange;
 import static io.ballerina.runtime.internal.util.exceptions.RuntimeErrors.CONFIG_TOML_PARSE_FAILED;
 import static io.ballerina.runtime.internal.util.exceptions.RuntimeErrors.CONFIG_TOML_READ_FAILED;
 
@@ -68,7 +69,7 @@ public class ConfigToml {
     private String getErrorMessage(List<Diagnostic> diagnosticList) {
         StringBuilder errorMessage = new StringBuilder("\n");
         for (Diagnostic diagnostic : diagnosticList) {
-            LineRange lineRange = diagnostic.location().lineRange();
+            LineRange lineRange = getOneBasedLineRange(diagnostic.location().lineRange());
             errorMessage.append("[").append(lineRange.filePath()).append(":")
                     .append(lineRange).append("] ").append(diagnostic.message()).append("\n");
         }
