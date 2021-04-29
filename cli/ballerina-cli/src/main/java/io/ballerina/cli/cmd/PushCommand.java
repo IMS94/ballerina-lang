@@ -41,7 +41,6 @@ import picocli.CommandLine;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -153,7 +152,7 @@ public class PushCommand implements BLauncherCmd {
                                                                    getAccessTokenOfCLI(settings));
 
                     try {
-                        pushPackage(project, client, settings);
+                        pushPackage(project, client);
                     } catch (ProjectException | CentralClientException e) {
                         CommandUtil.printError(this.errStream, e.getMessage(), null, false);
                         CommandUtil.exitError(this.exitWhenFinish);
@@ -202,10 +201,10 @@ public class PushCommand implements BLauncherCmd {
                 + " to '" + repositoryName + "' repository.");
     }
 
-    private void pushPackage(BuildProject project, CentralAPIClient client, Settings settings)
+    private void pushPackage(BuildProject project, CentralAPIClient client)
             throws CentralClientException {
         Path balaFilePath = validateBala(project, client);
-        pushBalaToRemote(balaFilePath, client, settings);
+        pushBalaToRemote(balaFilePath, client);
     }
 
     private static Path validateBala(BuildProject project, CentralAPIClient client) throws CentralClientException {
@@ -323,7 +322,7 @@ public class PushCommand implements BLauncherCmd {
      *
      * @param balaPath Path to the bala file.
      */
-    private void pushBalaToRemote(Path balaPath, CentralAPIClient client, Settings settings) {
+    private void pushBalaToRemote(Path balaPath, CentralAPIClient client) {
         Path balaFileName = balaPath.getFileName();
         if (null != balaFileName) {
             ProjectEnvironmentBuilder defaultBuilder = ProjectEnvironmentBuilder.getDefaultBuilder();
@@ -336,9 +335,9 @@ public class PushCommand implements BLauncherCmd {
 
             Path ballerinaHomePath = RepoUtils.createAndGetHomeReposPath();
             Path settingsTomlFilePath = ballerinaHomePath.resolve(SETTINGS_FILE_NAME);
-            String accessToken;
+
             try {
-                accessToken = authenticate(errStream, getBallerinaCentralCliTokenUrl(), settings, settingsTomlFilePath, client);
+                authenticate(errStream, getBallerinaCentralCliTokenUrl(), settingsTomlFilePath, client);
             } catch (SettingsTomlException e) {
                 CommandUtil.printError(this.errStream, e.getMessage(), null, false);
                 return;
