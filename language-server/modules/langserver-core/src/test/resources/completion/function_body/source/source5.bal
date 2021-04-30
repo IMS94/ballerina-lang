@@ -1,5 +1,13 @@
-import ballerina/jballerina.java as module1;
+import ballerina/module1;
 
-function testFunction(boolean validator1, boolean validator2) {
-    
+type Currency record {| string 'string; |};
+
+string 'if = "if";
+
+function 'function() returns string {
+    return "Function";
+}
+
+public function example(Currency 'from, string 'to) {
+    Currency fromCurrency =
 }
