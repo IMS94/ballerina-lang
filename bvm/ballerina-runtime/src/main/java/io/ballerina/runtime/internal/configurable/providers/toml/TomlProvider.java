@@ -282,6 +282,11 @@ public class TomlProvider implements ConfigProvider {
         return Optional.empty();
     }
 
+    @Override
+    public void complete() {
+
+    }
+
     private Object getPrimitiveTomlValue(Module module, VariableKey key) {
         String variableName = key.variable;
         TomlTableNode moduleNode = getModuleTomlNode(module, key);
