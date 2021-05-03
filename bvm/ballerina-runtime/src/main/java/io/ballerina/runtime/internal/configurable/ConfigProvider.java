@@ -61,6 +61,6 @@ public interface ConfigProvider {
 
     Optional<BXml> getAsXmlAndMark(Module module, VariableKey key);
 
-    void complete();
+    void complete(RuntimeDiagnosticLog diagnosticLog);
 
 }

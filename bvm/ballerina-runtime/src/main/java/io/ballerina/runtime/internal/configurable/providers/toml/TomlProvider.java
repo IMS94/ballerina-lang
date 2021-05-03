@@ -283,7 +283,7 @@ public class TomlProvider implements ConfigProvider {
     }
 
     @Override
-    public void complete() {
+    public void complete(RuntimeDiagnosticLog diagnosticLog) {
 
     }
 
