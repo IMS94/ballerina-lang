@@ -401,35 +401,35 @@
       "insertTextFormat": "Snippet"
     },
     {
-      "label": "c1",
+      "label": "p1",
       "kind": "Variable",
-      "detail": "$CompilationError$",
+      "detail": "Person",
       "sortText": "B",
-      "insertText": "c1",
-      "insertTextFormat": "Snippet"
-    },
-    {
-      "label": "c2",
-      "kind": "Variable",
-      "detail": "$CompilationError$",
-      "sortText": "B",
-      "insertText": "c2",
-      "insertTextFormat": "Snippet"
-    },
-    {
-      "label": "c3",
-      "kind": "Variable",
-      "detail": "$CompilationError$",
-      "sortText": "B",
-      "insertText": "c3",
+      "insertText": "p1",
       "insertTextFormat": "Snippet"
     },
     {
       "label": "p2",
       "kind": "Variable",
-      "detail": "$CompilationError$",
+      "detail": "Person",
       "sortText": "B",
       "insertText": "p2",
+      "insertTextFormat": "Snippet"
+    },
+    {
+      "label": "Thread",
+      "kind": "TypeParameter",
+      "detail": "Union",
+      "sortText": "M",
+      "insertText": "Thread",
+      "insertTextFormat": "Snippet"
+    },
+    {
+      "label": "personList",
+      "kind": "Variable",
+      "detail": "Person[]",
+      "sortText": "B",
+      "insertText": "personList",
       "insertTextFormat": "Snippet"
     },
     {
@@ -443,31 +443,24 @@
         }
       },
       "sortText": "C",
+      "filterText": "testIterableOperation",
       "insertText": "testIterableOperation()",
       "insertTextFormat": "Snippet"
     },
     {
-      "label": "p1",
-      "kind": "Variable",
-      "detail": "$CompilationError$",
-      "sortText": "B",
-      "insertText": "p1",
+      "label": "Customer",
+      "kind": "Struct",
+      "detail": "Record",
+      "sortText": "L",
+      "insertText": "Customer",
       "insertTextFormat": "Snippet"
     },
     {
-      "label": "customerList",
+      "label": "c1",
       "kind": "Variable",
-      "detail": "$CompilationError$[]",
+      "detail": "Customer",
       "sortText": "B",
-      "insertText": "customerList",
-      "insertTextFormat": "Snippet"
-    },
-    {
-      "label": "Thread",
-      "kind": "TypeParameter",
-      "detail": "Union",
-      "sortText": "M",
-      "insertText": "Thread",
+      "insertText": "c1",
       "insertTextFormat": "Snippet"
     },
     {
@@ -479,6 +472,30 @@
       "insertTextFormat": "Snippet"
     },
     {
+      "label": "customerList",
+      "kind": "Variable",
+      "detail": "Customer[]",
+      "sortText": "B",
+      "insertText": "customerList",
+      "insertTextFormat": "Snippet"
+    },
+    {
+      "label": "c2",
+      "kind": "Variable",
+      "detail": "Customer",
+      "sortText": "B",
+      "insertText": "c2",
+      "insertTextFormat": "Snippet"
+    },
+    {
+      "label": "c3",
+      "kind": "Variable",
+      "detail": "Customer",
+      "sortText": "B",
+      "insertText": "c3",
+      "insertTextFormat": "Snippet"
+    },
+    {
       "label": "onConflictError",
       "kind": "Variable",
       "detail": "error",
@@ -487,19 +504,11 @@
       "insertTextFormat": "Snippet"
     },
     {
-      "label": "personList",
-      "kind": "Variable",
-      "detail": "$CompilationError$[]",
-      "sortText": "B",
-      "insertText": "personList",
-      "insertTextFormat": "Snippet"
-    },
-    {
-      "label": "person",
-      "kind": "Variable",
-      "detail": "$CompilationError$",
-      "sortText": "B",
-      "insertText": "person",
+      "label": "Person",
+      "kind": "Struct",
+      "detail": "Record",
+      "sortText": "L",
+      "insertText": "Person",
       "insertTextFormat": "Snippet"
     },
     {
@@ -511,6 +520,14 @@
       },
       "sortText": "L",
       "insertText": "StrandData",
+      "insertTextFormat": "Snippet"
+    },
+    {
+      "label": "person",
+      "kind": "Variable",
+      "detail": "Person",
+      "sortText": "B",
+      "insertText": "person",
       "insertTextFormat": "Snippet"
     },
     {
