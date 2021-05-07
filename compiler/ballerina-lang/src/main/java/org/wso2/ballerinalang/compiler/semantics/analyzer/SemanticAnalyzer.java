@@ -124,8 +124,6 @@ import org.wso2.ballerinalang.compiler.tree.expressions.BLangSimpleVarRef;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangTupleVarRef;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangTypeConversionExpr;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangTypeInit;
-import org.wso2.ballerinalang.compiler.tree.expressions.BLangValueExpression;
-import org.wso2.ballerinalang.compiler.tree.expressions.BLangVariableReference;
 import org.wso2.ballerinalang.compiler.tree.matchpatterns.BLangConstPattern;
 import org.wso2.ballerinalang.compiler.tree.matchpatterns.BLangErrorCauseMatchPattern;
 import org.wso2.ballerinalang.compiler.tree.matchpatterns.BLangErrorFieldMatchPatterns;
@@ -550,18 +548,9 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
             }
         }
 
-        DiagnosticErrorCode code;
-        if (classDefinition.isServiceDecl) {
-            code = DiagnosticErrorCode.UNIMPLEMENTED_REFERENCED_METHOD_IN_SERVICE_DECL;
-        } else if ((classDefinition.symbol.flags & Flags.OBJECT_CTOR) == Flags.OBJECT_CTOR) {
-            code = DiagnosticErrorCode.UNIMPLEMENTED_REFERENCED_METHOD_IN_OBJECT_CTOR;
-        } else {
-            code = DiagnosticErrorCode.UNIMPLEMENTED_REFERENCED_METHOD_IN_CLASS;
-        }
-
         // Validate the referenced functions that don't have implementations within the function.
         for (BAttachedFunction func : ((BObjectTypeSymbol) classDefinition.symbol).referencedFunctions) {
-            validateReferencedFunction(classDefinition.pos, func, env, code);
+            validateReferencedFunction(classDefinition.pos, func, env);
         }
 
         analyzerClassInitMethod(classDefinition);
@@ -635,13 +624,23 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
             }
         });
 
+        // Validate the referenced functions that don't have implementations within the function.
+        ((BObjectTypeSymbol) objectTypeNode.symbol).referencedFunctions
+                .forEach(func -> validateReferencedFunction(objectTypeNode.pos, func, env));
+
         validateInclusions(objectTypeNode.flagSet, objectTypeNode.typeRefs, true, false);
 
         if (objectTypeNode.initFunction == null) {
             return;
         }
 
-        this.dlog.error(objectTypeNode.initFunction.pos, DiagnosticErrorCode.INIT_METHOD_IN_OBJECT_TYPE_DESCRIPTOR,
+        if (objectTypeNode.initFunction.flagSet.contains(Flag.PRIVATE)) {
+            this.dlog.error(objectTypeNode.initFunction.pos, DiagnosticErrorCode.PRIVATE_OBJECT_CONSTRUCTOR,
+                    objectTypeNode.symbol.name);
+            return;
+        }
+
+        this.dlog.error(objectTypeNode.initFunction.pos, DiagnosticErrorCode.ABSTRACT_OBJECT_CONSTRUCTOR,
                 objectTypeNode.symbol.name);
     }
 
@@ -1414,7 +1413,7 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
 
     private Boolean validateLhsVar(BLangExpression vRef) {
         if (vRef.getKind() == NodeKind.INVOCATION) {
-            dlog.error(((BLangInvocation) vRef).pos, DiagnosticErrorCode.INVALID_INVOCATION_LVALUE_ASSIGNMENT, vRef);
+            dlog.error(vRef.pos, DiagnosticErrorCode.INVALID_INVOCATION_LVALUE_ASSIGNMENT, vRef);
             return false;
         }
         if (vRef.getKind() == NodeKind.FIELD_BASED_ACCESS_EXPR
@@ -1426,16 +1425,27 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
 
     public void visit(BLangCompoundAssignment compoundAssignment) {
         List<BType> expTypes = new ArrayList<>();
-        BLangExpression varRef = compoundAssignment.varRef;
+        BLangAccessExpression varRef = compoundAssignment.varRef;
+
         // Check whether the variable reference is an function invocation or not.
         boolean isValidVarRef = validateLhsVar(varRef);
         if (isValidVarRef) {
-            compoundAssignment.varRef.isCompoundAssignmentLValue = true;
+            varRef.compoundAssignmentLhsVar = true;
             this.typeChecker.checkExpr(varRef, env);
+
+            // If this is an update of a type narrowed variable, the assignment should allow assigning
+            // values of its original type. Therefore treat all lhs simpleVarRefs in their original type.
+            if (isSimpleVarRef(varRef)) {
+                BVarSymbol originSymbol = ((BVarSymbol) varRef.symbol).originalSymbol;
+                if (originSymbol != null) {
+                    varRef.type = originSymbol.type;
+                }
+            }
             expTypes.add(varRef.type);
         } else {
             expTypes.add(symTable.semanticError);
         }
+
         this.typeChecker.checkExpr(compoundAssignment.expr, env);
 
         checkConstantAssignment(varRef);
@@ -1464,6 +1474,8 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
                         Lists.of(compoundAssignment.modifiedExpr.type), expTypes);
             }
         }
+
+        resetTypeNarrowing(varRef, compoundAssignment.expr.type);
     }
 
     public void visit(BLangAssignment assignNode) {
@@ -3447,7 +3459,13 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
     private void setTypeOfVarRefInAssignment(BLangExpression expr) {
         // In assignments, lhs supports only simple, record, error, tuple
         // varRefs and field, xml and index based access expressions.
-        if (!(expr instanceof BLangValueExpression)) {
+        if (expr.getKind() != NodeKind.SIMPLE_VARIABLE_REF
+                && expr.getKind() != NodeKind.INDEX_BASED_ACCESS_EXPR
+                && expr.getKind() != NodeKind.FIELD_BASED_ACCESS_EXPR
+                && expr.getKind() != NodeKind.XML_ATTRIBUTE_ACCESS_EXPR
+                && expr.getKind() != NodeKind.RECORD_VARIABLE_REF
+                && expr.getKind() != NodeKind.ERROR_VARIABLE_REF
+                && expr.getKind() != NodeKind.TUPLE_VARIABLE_REF) {
             dlog.error(expr.pos, DiagnosticErrorCode.INVALID_VARIABLE_ASSIGNMENT, expr);
             expr.type = symTable.semanticError;
         }
@@ -3455,8 +3473,8 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
     }
 
     private void setTypeOfVarRef(BLangExpression expr) {
-        BLangValueExpression varRefExpr = (BLangValueExpression) expr;
-        varRefExpr.isLValue = true;
+        BLangAccessExpression varRefExpr = (BLangAccessExpression) expr;
+        varRefExpr.lhsVar = true;
         typeChecker.checkExpr(varRefExpr, env);
 
         // Check whether this is an readonly field.
@@ -3473,8 +3491,8 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
     }
 
     private void setTypeOfVarRefForBindingPattern(BLangExpression expr) {
-        BLangVariableReference varRefExpr = (BLangVariableReference) expr;
-        varRefExpr.isLValue = true;
+        BLangAccessExpression varRefExpr = (BLangAccessExpression) expr;
+        varRefExpr.lhsVar = true;
         typeChecker.checkExpr(varRefExpr, env);
 
         switch (expr.getKind()) {
@@ -3703,8 +3721,7 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
         }
     }
 
-    private void validateReferencedFunction(Location pos, BAttachedFunction func, SymbolEnv env,
-                                            DiagnosticErrorCode code) {
+    private void validateReferencedFunction(Location pos, BAttachedFunction func, SymbolEnv env) {
         if (!Symbols.isFlagOn(func.symbol.receiverSymbol.type.tsymbol.flags, Flags.CLASS)) {
             return;
         }
@@ -3720,7 +3737,8 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
 
         // There must be an implementation at the outer level, if the function is an interface.
         if (!env.enclPkg.objAttachedFunctions.contains(func.symbol)) {
-            dlog.error(pos, code, func.funcName, func.symbol.receiverSymbol.type);
+            dlog.error(pos, DiagnosticErrorCode.UNIMPLEMENTED_REFERENCED_METHOD_IN_CLASS, func.funcName,
+                    func.symbol.receiverSymbol.type);
         }
     }
 
