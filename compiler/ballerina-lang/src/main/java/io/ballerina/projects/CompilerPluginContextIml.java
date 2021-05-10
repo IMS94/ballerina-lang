@@ -20,6 +20,7 @@ package io.ballerina.projects;
 import io.ballerina.projects.plugins.CodeAnalyzer;
 import io.ballerina.projects.plugins.CompilerLifecycleListener;
 import io.ballerina.projects.plugins.CompilerPluginContext;
+import io.ballerina.projects.plugins.codeaction.CodeActionProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ class CompilerPluginContextIml implements CompilerPluginContext {
     private final CompilerPluginInfo compilerPluginInfo;
     private final List<CodeAnalyzerManager.CodeAnalyzerInfo> codeAnalyzers = new ArrayList<>();
     private final List<CompilerLifecycleManager.LifecycleListenerInfo> lifecycleListeners = new ArrayList<>();
+    private final List<CodeActionProvider> codeActionProviders = new ArrayList<>();
 
     CompilerPluginContextIml(CompilerPluginInfo compilerPluginInfo) {
         this.compilerPluginInfo = compilerPluginInfo;
@@ -49,11 +51,24 @@ class CompilerPluginContextIml implements CompilerPluginContext {
                 new CompilerLifecycleManager.LifecycleListenerInfo(lifecycleListener, compilerPluginInfo));
     }
 
+    @Override
+    public void addCodeActionProvider(CodeActionProvider provider) {
+        codeActionProviders.add(provider);
+    }
+
     List<CodeAnalyzerManager.CodeAnalyzerInfo> codeAnalyzers() {
         return codeAnalyzers;
     }
 
     public List<CompilerLifecycleManager.LifecycleListenerInfo> getLifecycleListeners() {
         return lifecycleListeners;
+    }
+
+    public List<CodeActionProvider> codeActionProviders() {
+        return codeActionProviders;
+    }
+
+    public CompilerPluginInfo compilerPluginInfo() {
+        return compilerPluginInfo;
     }
 }
