@@ -35,7 +35,6 @@ import org.testng.annotations.Test;
 /**
  * Class to test functionality of assignment operation.
  */
-
 public class AssignStmtTest {
 
     private CompileResult result;
@@ -141,19 +140,6 @@ public class AssignStmtTest {
         Assert.assertEquals(actual, expected);
     }
 
-    @Test(description = "Test binary expression with int and float")
-    public void testBinaryExpressionIntToFloat() {
-        BValue[] args = { new BInteger(100) };
-        BValue[] returns = BRunUtil.invoke(result, "testBinaryExpressionIntAndFloatStmt", args);
-
-        Assert.assertEquals(returns.length, 1);
-        Assert.assertSame(returns[0].getClass(), BFloat.class);
-
-        double actual = ((BFloat) returns[0]).floatValue();
-        double expected = 200f;
-        Assert.assertEquals(actual, expected);
-    }
-
     @Test(description = "Test action result assignment with variable destructure")
     public void restActionResultAssignment() {
         BValue[] returns = BRunUtil.invoke(result, "restActionResultAssignment");
@@ -163,6 +149,16 @@ public class AssignStmtTest {
         Assert.assertEquals(returns[3].stringValue(), "the error reason");
         Assert.assertEquals(returns[4].stringValue(), "foo3 error");
         Assert.assertEquals(returns[5].stringValue(), "3");
+    }
+
+    @Test
+    public void testAssignmentSemanticAnalysisNegativeCases() {
+        CompileResult resultNegative = BCompileUtil.compile(
+                "test-src/statements/assign/assign_stmt_semantic_negative.bal");
+        int index = 0;
+        BAssertUtil.validateError(resultNegative, index++, "cannot assign a value to final 'i'", 21, 5);
+        BAssertUtil.validateError(resultNegative, index++, "cannot assign a value to final 'aa'", 27, 5);
+        Assert.assertEquals(index, resultNegative.getErrorCount());
     }
 
     @Test(description = "Test assignment statement with errors")
@@ -279,31 +275,6 @@ public class AssignStmtTest {
     @Test()
     public void assignAnyToUnionWithErrorAndAny() {
         BRunUtil.invoke(result, "assignAnyToUnionWithErrorAndAny");
-    }
-
-    @Test
-    public void testAssignmentStmtSemanticsNegative() {
-        resultNegative = BCompileUtil.compile("test-src/statements/assign/assign-stmt-semantics-negative.bal");
-        Assert.assertEquals(resultNegative.getErrorCount(), 13);
-        int i = 0;
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 20, 5);
-        BAssertUtil.validateError(resultNegative, i++, "incompatible types: expected 'typedesc<Foo>', found 'int'",
-                20, 11);
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 21, 5);
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 23, 6);
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 24, 7);
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 25, 12);
-        BAssertUtil.validateError(resultNegative, i++, "incompatible types: expected 'string', found 'typedesc<Foo>'",
-                25, 12);
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 26, 11);
-        BAssertUtil.validateError(resultNegative, i++, "incompatible types: expected 'string', found 'typedesc<Foo>'",
-                26, 11);
-        BAssertUtil.validateError(resultNegative, i++, "invalid rest descriptor type; expecting an array type but " +
-                        "found 'typedesc<Foo>'", 27, 5);
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 27, 9);
-        BAssertUtil.validateError(resultNegative, i++, "cannot assign a value to a type definition", 29, 14);
-        BAssertUtil.validateError(resultNegative, i, "incompatible types: expected 'error?', found 'typedesc<Foo>'",
-                29, 14);
     }
 
     @AfterClass
