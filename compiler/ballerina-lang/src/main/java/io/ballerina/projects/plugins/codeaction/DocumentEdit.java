@@ -15,22 +15,26 @@
  */
 package io.ballerina.projects.plugins.codeaction;
 
-import io.ballerina.tools.diagnostics.Diagnostic;
-
-import java.util.List;
-import java.util.Optional;
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
 
 /**
- * Code action provider interface.
+ * Represents edits made to a given text document.
  */
-public interface CodeActionProvider {
+public class DocumentEdit {
 
-    // TODO Or return CodeAction with a prevalidation step
-    //      Anyway, return a single code action
-    Optional<CodeAction> getCodeActions(ToolingCodeActionContext context, Diagnostic diagnostic);
+    private String fileUri;
+    private SyntaxTree modifiedSyntaxTree;
 
-    List<DocumentEdit> execute(ToolingCodeActionContext context,
-                               List<CodeActionArgument> arguments);
+    public DocumentEdit(String fileUri, SyntaxTree modifiedSyntaxTree) {
+        this.fileUri = fileUri;
+        this.modifiedSyntaxTree = modifiedSyntaxTree;
+    }
 
-    String name();
+    public String getFileUri() {
+        return fileUri;
+    }
+
+    public SyntaxTree getModifiedSyntaxTree() {
+        return modifiedSyntaxTree;
+    }
 }
