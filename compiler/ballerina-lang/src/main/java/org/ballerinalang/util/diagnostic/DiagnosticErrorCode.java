@@ -104,7 +104,7 @@ public enum DiagnosticErrorCode implements DiagnosticCode {
     BINARY_OP_INCOMPATIBLE_TYPES("BCE2070", "binary.op.incompatible.types"),
     UNARY_OP_INCOMPATIBLE_TYPES("BCE2071", "unary.op.incompatible.types"),
     SELF_REFERENCE_VAR("BCE2072", "self.reference.var"),
-    INVALID_WORKER_SEND_POSITION("BCE2073", "invalid.worker.send.position"),
+    UNSUPPORTED_WORKER_SEND_POSITION("BCE2073", "unsupported.worker.send.position"),
     INVALID_WORKER_RECEIVE_POSITION("BCE2074", "invalid.worker.receive.position"),
     UNDEFINED_WORKER("BCE2075", "undefined.worker"),
     INVALID_WORKER_JOIN_RESULT_TYPE("BCE2076", "invalid.worker.join.result.type"),
@@ -349,52 +349,49 @@ public enum DiagnosticErrorCode implements DiagnosticCode {
     INVALID_ERROR_REASON_BINDING_PATTERN("BCE2613", "invalid.error.reason.binding.pattern"),
     INVALID_ERROR_REST_BINDING_PATTERN("BCE2614", "invalid.error.rest.binding.pattern"),
     INVALID_TYPE_DEFINITION_FOR_ERROR_VAR("BCE2615", "invalid.type.definition.for.error.var"),
-    INVALID_ERROR_DESTRUCTURING_NO_REASON_GIVEN("BCE2616", "invalid.error.destructuring.reason"),
-    INVALID_ERROR_MATCH_PATTERN("BCE2617", "invalid.error.match.pattern"),
-    DUPLICATE_VARIABLE_IN_BINDING_PATTERN("BCE2618", "duplicate.variable.in.binding.pattern"),
-    INVALID_VARIABLE_REFERENCE_IN_BINDING_PATTERN("BCE2619", "invalid.variable.reference.in.binding.pattern"),
-    CANNOT_ASSIGN_VALUE_TO_TYPE_DEF("BCE2620", "cannot.assign.value.to.type.def"),
+    INVALID_ERROR_MATCH_PATTERN("BCE2616", "invalid.error.match.pattern"),
+    DUPLICATE_VARIABLE_IN_BINDING_PATTERN("BCE2617", "duplicate.variable.in.binding.pattern"),
+    INVALID_VARIABLE_REFERENCE_IN_BINDING_PATTERN("BCE2618", "invalid.variable.reference.in.binding.pattern"),
+    CANNOT_ASSIGN_VALUE_TO_TYPE_DEF("BCE2619", "cannot.assign.value.to.type.def"),
 
-    INVALID_NAMESPACE_PREFIX("BCE2621", "invalid.namespace.prefix"),
-    XML_TAGS_MISMATCH("BCE2622", "mismatching.xml.start.end.tags"),
-    XML_ATTRIBUTE_MAP_UPDATE_NOT_ALLOWED("BCE2623", "xml.attribute.map.update.not.allowed"),
-    XML_QNAME_UPDATE_NOT_ALLOWED("BCE2624", "xml.qname.update.not.allowed"),
-    INVALID_NAMESPACE_DECLARATION("BCE2625", "invalid.namespace.declaration"),
-    CANNOT_UPDATE_XML_SEQUENCE("BCE2626", "cannot.update.xml.sequence"),
-    INVALID_XML_NS_INTERPOLATION("BCE2627", "invalid.xml.ns.interpolation"),
-    CANNOT_FIND_XML_NAMESPACE("BCE2628", "cannot.find.xml.namespace.prefix"),
-    UNSUPPORTED_METHOD_INVOCATION_XML_NAV("BCE2629", "method.invocation.in.xml.navigation.expressions.not.supported"),
-    DEPRECATED_XML_ATTRIBUTE_ACCESS("BCE2630", "deprecated.xml.attribute.access.expression"),
-    UNSUPPORTED_MEMBER_ACCESS_IN_XML_NAVIGATION("BCE2631", "member.access.within.xml.navigation.expression.not" +
+    INVALID_NAMESPACE_PREFIX("BCE2620", "invalid.namespace.prefix"),
+    XML_TAGS_MISMATCH("BCE2621", "mismatching.xml.start.end.tags"),
+    XML_ATTRIBUTE_MAP_UPDATE_NOT_ALLOWED("BCE2622", "xml.attribute.map.update.not.allowed"),
+    XML_QNAME_UPDATE_NOT_ALLOWED("BCE2623", "xml.qname.update.not.allowed"),
+    INVALID_NAMESPACE_DECLARATION("BCE2624", "invalid.namespace.declaration"),
+    CANNOT_UPDATE_XML_SEQUENCE("BCE2625", "cannot.update.xml.sequence"),
+    INVALID_XML_NS_INTERPOLATION("BCE2626", "invalid.xml.ns.interpolation"),
+    CANNOT_FIND_XML_NAMESPACE("BCE2627", "cannot.find.xml.namespace.prefix"),
+    UNSUPPORTED_METHOD_INVOCATION_XML_NAV("BCE2628", "method.invocation.in.xml.navigation.expressions.not.supported"),
+    DEPRECATED_XML_ATTRIBUTE_ACCESS("BCE2629", "deprecated.xml.attribute.access.expression"),
+    UNSUPPORTED_MEMBER_ACCESS_IN_XML_NAVIGATION("BCE2630", "member.access.within.xml.navigation.expression.not" +
             ".supported"),
 
-    UNDEFINED_ANNOTATION("BCE2632", "undefined.annotation"),
-    ANNOTATION_NOT_ALLOWED("BCE2633", "annotation.not.allowed"),
-    ANNOTATION_ATTACHMENT_CANNOT_HAVE_A_VALUE("BCE2634", "annotation.attachment.cannot.have.a.value"),
-    ANNOTATION_ATTACHMENT_REQUIRES_A_VALUE("BCE2635", "annotation.attachment.requires.a.value"),
+    UNDEFINED_ANNOTATION("BCE2631", "undefined.annotation"),
+    ANNOTATION_NOT_ALLOWED("BCE2632", "annotation.not.allowed"),
+    ANNOTATION_ATTACHMENT_CANNOT_HAVE_A_VALUE("BCE2633", "annotation.attachment.cannot.have.a.value"),
+    ANNOTATION_ATTACHMENT_REQUIRES_A_VALUE("BCE2634", "annotation.attachment.requires.a.value"),
     ANNOTATION_ATTACHMENT_CANNOT_SPECIFY_MULTIPLE_VALUES(
-            "BCE2636", "annotation.attachment.cannot.specify.multiple.values"),
-    ANNOTATION_INVALID_TYPE("BCE2637", "annotation.invalid.type"),
-    ANNOTATION_INVALID_CONST_TYPE("BCE2638", "annotation.invalid.const.type"),
-    ANNOTATION_REQUIRES_CONST("BCE2639", "annotation.requires.const"),
-    INCOMPATIBLE_TYPES_ARRAY_FOUND("BCE2640", "incompatible.types.array.found"),
-    CANNOT_GET_ALL_FIELDS("BCE2641", "cannot.get.all.fields"),
+            "BCE2635", "annotation.attachment.cannot.specify.multiple.values"),
+    ANNOTATION_INVALID_TYPE("BCE2636", "annotation.invalid.type"),
+    ANNOTATION_INVALID_CONST_TYPE("BCE2637", "annotation.invalid.const.type"),
+    ANNOTATION_REQUIRES_CONST("BCE2638", "annotation.requires.const"),
+    INCOMPATIBLE_TYPES_ARRAY_FOUND("BCE2639", "incompatible.types.array.found"),
+    CANNOT_GET_ALL_FIELDS("BCE2640", "cannot.get.all.fields"),
 
-    INVALID_DOCUMENTATION_IDENTIFIER("BCE2642", "invalid.documentation.identifier"),
+    INVALID_DOCUMENTATION_IDENTIFIER("BCE2641", "invalid.documentation.identifier"),
 
-    OPERATOR_NOT_SUPPORTED("BCE2643", "operator.not.supported"),
-    OPERATOR_NOT_ALLOWED_VARIABLE("BCE2644", "operator.not.allowed.variable"),
-    NEVER_TYPE_NOT_ALLOWED_FOR_REQUIRED_DEFAULTABLE_PARAMS("BCE2645",
+    OPERATOR_NOT_SUPPORTED("BCE2642", "operator.not.supported"),
+    OPERATOR_NOT_ALLOWED_VARIABLE("BCE2643", "operator.not.allowed.variable"),
+    NEVER_TYPE_NOT_ALLOWED_FOR_REQUIRED_DEFAULTABLE_PARAMS("BCE2644",
             "never.type.not.allowed.for.required.and.defaultable.params"),
-    INVALID_CLIENT_REMOTE_METHOD_CALL("BCE2646", "invalid.client.remote.method.call"),
-    NEVER_TYPED_VAR_DEF_NOT_ALLOWED("BCE2647", "never.typed.var.def.not.allowed"),
-    NEVER_TYPED_OBJECT_FIELD_NOT_ALLOWED("BCE2648", "never.typed.object.field.not.allowed"),
+    INVALID_CLIENT_REMOTE_METHOD_CALL("BCE2645", "invalid.client.remote.method.call"),
+    NEVER_TYPED_VAR_DEF_NOT_ALLOWED("BCE2646", "never.typed.var.def.not.allowed"),
+    NEVER_TYPED_OBJECT_FIELD_NOT_ALLOWED("BCE2647", "never.typed.object.field.not.allowed"),
 
-    EXPRESSION_DOES_NOT_SUPPORT_MEMBER_ACCESS("BCE2649", "expression.does.not.support.member.access"),
-    EXPRESSION_DOES_NOT_SUPPORT_FIELD_ACCESS("BCE2650", "expression.does.not.support.field.access"),
-    CANNOT_USE_TYPE_INCLUSION_WITH_MORE_THAN_ONE_OPEN_RECORD_WITH_DIFFERENT_REST_DESCRIPTOR_TYPES("BCE2651",
+    CANNOT_USE_TYPE_INCLUSION_WITH_MORE_THAN_ONE_OPEN_RECORD_WITH_DIFFERENT_REST_DESCRIPTOR_TYPES("BCE2650",
             "cannot.use.type.inclusion.with.more.than.one.open.record.with.different.rest.descriptor.types"),
-    INVALID_METHOD_CALL_EXPR_ON_FIELD("BCE2652", "invalid.method.call.expr.on.field"),
+    INVALID_METHOD_CALL_EXPR_ON_FIELD("BCE2651", "invalid.method.call.expr.on.field"),
 
     // Error codes related to iteration.
     ITERABLE_NOT_SUPPORTED_COLLECTION("BCE2800", "iterable.not.supported.collection"),
@@ -661,8 +658,8 @@ public enum DiagnosticErrorCode implements DiagnosticCode {
 
     CONFIGURABLE_VARIABLE_CANNOT_BE_DECLARED_WITH_VAR(
             "BCE3968", "configurable.variable.cannot.be.declared.with.var"),
-    CONFIGURABLE_VARIABLE_MUST_BE_ANYDATA(
-            "BCE3969", "configurable.variable.must.be.anydata"),
+    CONFIGURABLE_VARIABLE_MUST_BE_ANYDATA_AND_READONLY(
+            "BCE3969", "configurable.variable.must.be.anydata.and.readonly"),
     ONLY_SIMPLE_VARIABLES_ARE_ALLOWED_TO_BE_CONFIGURABLE(
             "BCE3970", "only.simple.variables.are.allowed.to.be.configurable"),
     CONFIGURABLE_VARIABLE_CURRENTLY_NOT_SUPPORTED(
@@ -716,10 +713,11 @@ public enum DiagnosticErrorCode implements DiagnosticCode {
     INVALID_MAIN_OPTION_PARAMS_TYPE("BCE4003", "invalid.main.option.params.type"),
     WORKER_INTERACTION_AFTER_WAIT_ACTION("BCE4005", "invalid.worker.message.passing.after.wait.action"),
     OPTIONAL_OPERAND_PRECEDES_OPERAND("BCE4006", "optional.operand.precedes.operand"),
+
     UNIMPLEMENTED_REFERENCED_METHOD_IN_SERVICE_DECL("BCE4007",
             "unimplemented.referenced.method.in.service.declaration"),
-    UNIMPLEMENTED_REFERENCED_METHOD_IN_OBJECT_CTOR("BCE4008", "unimplemented.referenced.method.in.object.constructor"),
-    ;
+    UNIMPLEMENTED_REFERENCED_METHOD_IN_OBJECT_CTOR("BCE4008", "unimplemented.referenced.method.in.object.constructor")
+            ;
 
     private String diagnosticId;
     private String messageKey;
