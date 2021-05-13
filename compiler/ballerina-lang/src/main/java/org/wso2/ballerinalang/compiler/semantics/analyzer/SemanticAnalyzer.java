@@ -935,6 +935,9 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
                     for (BLangVariable param : params) {
                         analyzeTypeNode(param.typeNode, env);
                     }
+                    if (functionTypeNode.restParam != null) {
+                        analyzeTypeNode(functionTypeNode.restParam.typeNode, env);
+                    }
                     if (functionTypeNode.returnTypeNode != null) {
                         analyzeTypeNode(functionTypeNode.returnTypeNode, env);
                     }
@@ -1588,10 +1591,9 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
 
         if (varRef.getKind() == NodeKind.SIMPLE_VARIABLE_REF) {
             BLangSimpleVarRef variableRef = (BLangSimpleVarRef) varRef;
-            if (variableRef.lhsVar && variableRef.symbol != null &&
+            if (variableRef.isLValue && variableRef.symbol != null &&
                     (variableRef.symbol.tag & SymTag.TYPE_DEF) == SymTag.TYPE_DEF) {
                 dlog.error(varRef.pos, DiagnosticErrorCode.CANNOT_ASSIGN_VALUE_TO_TYPE_DEF);
-                return;
             }
         }
 
@@ -1606,14 +1608,7 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
     public void visit(BLangTupleDestructure tupleDeStmt) {
         for (BLangExpression tupleVar : tupleDeStmt.varRef.expressions) {
             setTypeOfVarRefForBindingPattern(tupleVar);
-            if (tupleVar.getKind() == NodeKind.SIMPLE_VARIABLE_REF) {
-                BLangSimpleVarRef variableRef = (BLangSimpleVarRef) tupleVar;
-                if (variableRef.lhsVar && variableRef.symbol != null &&
-                        (variableRef.symbol.tag & SymTag.TYPE_DEF) == SymTag.TYPE_DEF) {
-                    dlog.error(tupleVar.pos, DiagnosticErrorCode.CANNOT_ASSIGN_VALUE_TO_TYPE_DEF);
-                    return;
-                }
-            }
+            checkInvalidTypeDef(tupleVar);
         }
 
         if (tupleDeStmt.varRef.restParam != null) {
@@ -1635,9 +1630,11 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
         // recursively visit the var refs and create the record type
         for (BLangRecordVarRefKeyValue keyValue : recordDeStmt.varRef.recordRefFields) {
             setTypeOfVarRefForBindingPattern(keyValue.variableReference);
+            checkInvalidTypeDef(keyValue.variableReference);
         }
         if (recordDeStmt.varRef.restParam != null) {
             setTypeOfVarRefForBindingPattern((BLangExpression) recordDeStmt.varRef.restParam);
+            checkInvalidTypeDef((BLangExpression) recordDeStmt.varRef.restParam);
         }
         setTypeOfVarRef(recordDeStmt.varRef);
 
@@ -1659,6 +1656,7 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
         if (varRef.message != null) {
             if (names.fromIdNode(((BLangSimpleVarRef) varRef.message).variableName) != Names.IGNORE) {
                 setTypeOfVarRefInErrorBindingAssignment(varRef.message);
+                checkInvalidTypeDef(varRef.message);
             } else {
                 // set message var refs type to no type if the variable name is '_'
                 varRef.message.type = symTable.noType;
@@ -1669,6 +1667,7 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
             if (varRef.cause.getKind() != NodeKind.SIMPLE_VARIABLE_REF ||
                     names.fromIdNode(((BLangSimpleVarRef) varRef.cause).variableName) != Names.IGNORE) {
                 setTypeOfVarRefInErrorBindingAssignment(varRef.cause);
+                checkInvalidTypeDef(varRef.cause);
             } else {
                 // set cause var refs type to no type if the variable name is '_'
                 varRef.cause.type = symTable.noType;
@@ -3644,6 +3643,50 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
                 errorVarRef.detail.forEach(namedArgExpr -> setTypeOfVarRefForBindingPattern(namedArgExpr.expr));
                 if (errorVarRef.restVar != null) {
                     setTypeOfVarRefForBindingPattern(errorVarRef.restVar);
+                }
+        }
+    }
+
+    private void checkInvalidTypeDef(BLangExpression expr) {
+        switch (expr.getKind()) {
+            case SIMPLE_VARIABLE_REF:
+                BLangSimpleVarRef variableRef = (BLangSimpleVarRef) expr;
+                if (variableRef.isLValue && variableRef.symbol != null &&
+                        (variableRef.symbol.tag & SymTag.TYPE_DEF) == SymTag.TYPE_DEF) {
+                    dlog.error(expr.pos, DiagnosticErrorCode.CANNOT_ASSIGN_VALUE_TO_TYPE_DEF);
+                }
+                return;
+            case TUPLE_VARIABLE_REF:
+                BLangTupleVarRef tupleVarRef = (BLangTupleVarRef) expr;
+                for (BLangExpression tupleExpr : tupleVarRef.expressions) {
+                    checkInvalidTypeDef(tupleExpr);
+                }
+                if (tupleVarRef.restParam != null) {
+                    checkInvalidTypeDef((BLangExpression) tupleVarRef.restParam);
+                }
+                return;
+            case RECORD_VARIABLE_REF:
+                BLangRecordVarRef recordVarRef = (BLangRecordVarRef) expr;
+                for (BLangRecordVarRefKeyValue refKeyValue : recordVarRef.recordRefFields) {
+                    checkInvalidTypeDef(refKeyValue.variableReference);
+                }
+                if (recordVarRef.restParam != null) {
+                    checkInvalidTypeDef((BLangExpression) recordVarRef.restParam);
+                }
+                return;
+            case ERROR_VARIABLE_REF:
+                BLangErrorVarRef errorVarRef = (BLangErrorVarRef) expr;
+                if (errorVarRef.message != null) {
+                    checkInvalidTypeDef(errorVarRef.message);
+                }
+                if (errorVarRef.cause != null) {
+                    checkInvalidTypeDef(errorVarRef.cause);
+                }
+                for (BLangNamedArgsExpression namedArgExpr : errorVarRef.detail) {
+                    checkInvalidTypeDef(namedArgExpr.expr);
+                }
+                if (errorVarRef.restVar != null) {
+                    checkInvalidTypeDef(errorVarRef.restVar);
                 }
         }
     }
