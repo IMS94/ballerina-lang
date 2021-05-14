@@ -24,6 +24,7 @@ import org.ballerinalang.test.context.BallerinaTestException;
 import org.ballerinalang.test.context.LogLeecher;
 import org.ballerinalang.test.packaging.PackerinaTestUtils;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -49,6 +50,17 @@ public class ConfigurableTest extends BaseTest {
     @BeforeClass
     public void setup() throws BallerinaTestException {
         bMainInstance = new BMainInstance(balServer);
+
+        // Build and push config Lib project.
+        LogLeecher buildLeecher = new LogLeecher("target/bala/testOrg-configLib-any-0.1.0.bala");
+        LogLeecher pushLeecher = new LogLeecher("Successfully pushed target/bala/testOrg-configLib-any-0.1.0.bala to " +
+                                                        "'local' repository.", ERROR);
+        bMainInstance.runMain("build", new String[]{"-c"}, null, null, new LogLeecher[]{buildLeecher},
+                              testFileLocation + "/configLibProject");
+        buildLeecher.waitForText(5000);
+        bMainInstance.runMain("push", new String[]{"--repository=local"}, null, null, new LogLeecher[]{pushLeecher},
+                              testFileLocation + "/configLibProject");
+        pushLeecher.waitForText(5000);
     }
 
     @Test
@@ -72,7 +84,7 @@ public class ConfigurableTest extends BaseTest {
         bMainInstance.runMain(testFileLocation + "/configurableCliProject", "main", null,
                               new String[]{"-CintVar=42", "-CbyteVar=22", "-CstringVar=waru=na", "-CbooleanVar=true",
                                       "-CxmlVar=<book>The Lost World</book>", "-CtestOrg.main.floatVar=3.5",
-                                      "-Cmain.decimalVar=24.87"},
+                                      "-Cmain.decimalVar=24.87", "-Cmain.color=RED", "-Cmain.countryCode=Sri Lanka"},
                               null, null, new LogLeecher[]{logLeecher});
         logLeecher.waitForText(5000);
     }
@@ -89,8 +101,8 @@ public class ConfigurableTest extends BaseTest {
                               new LogLeecher[]{testLog}, testFileLocation + "/testProject");
         testLog.waitForText(5000);
 
-        String errorMsg = "error: configurable variable 'invalidArr' with type '(int[] & readonly)[] & readonly' is " +
-                "not supported";
+        String errorMsg = "error: configurable variable 'invalidMap' with type 'map<(anydata & readonly)> &" +
+                " readonly' is not supported";
         String errorLocationMsg = "\tat testOrg/configPkg:0.1.0(tests/main_test.bal:19)";
         LogLeecher errorLog = new LogLeecher(errorMsg, ERROR);
         LogLeecher errorLocationLog = new LogLeecher(errorLocationMsg, ERROR);
@@ -186,6 +198,16 @@ public class ConfigurableTest extends BaseTest {
     @Test
     public void testRecordValueWithModuleClash() throws BallerinaTestException {
         executeBalCommand("/recordModuleProject", "main", null);
+    }
+
+    @Test()
+    public void testConfigurableRecordsAndRecordTables() throws BallerinaTestException {
+        executeBalCommand("/configStructuredTypesProject", "configStructuredTypes", null);
+    }
+
+    @Test()
+    public void testConfigurableUnionTypes() throws BallerinaTestException {
+        executeBalCommand("/configUnionTypesProject", "configUnionTypes", null);
     }
 
     /** Negative test cases. */
