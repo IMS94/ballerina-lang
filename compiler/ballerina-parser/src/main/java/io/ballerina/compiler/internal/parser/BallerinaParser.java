@@ -16123,13 +16123,15 @@ public class BallerinaParser extends AbstractParser {
                                                   STUnionTypeDescriptorNode unionTypeDesc) {
         STNode leftTypeDesc = unionTypeDesc.leftTypeDesc;
 
-        // e.g. D[] | ((A|C)|D)
+        // e.g. E[] | ((A|B)|C)
+        // To: ((E[]|A)|B) | C
         if (leftTypeDesc.kind == SyntaxKind.UNION_TYPE_DESC) {
             return unionTypeDesc.replace(unionTypeDesc.leftTypeDesc,
                     replaceLeftMostUnionWithAUnion(typeDesc, pipeToken, (STUnionTypeDescriptorNode) leftTypeDesc));
         }
 
-        // e.g. D[] | (A|C)
+        // e.g. E[] | (A|B)
+        // To: (E[]|A) | B
         leftTypeDesc = createUnionTypeDesc(typeDesc, pipeToken, leftTypeDesc);
         return unionTypeDesc.replace(unionTypeDesc.leftTypeDesc, leftTypeDesc);
     }
@@ -16138,21 +16140,24 @@ public class BallerinaParser extends AbstractParser {
                                                          STUnionTypeDescriptorNode unionTypeDesc) {
         STNode leftTypeDesc = unionTypeDesc.leftTypeDesc;
         
-        // e.g. D[] & ((A|C)|D)
+        // e.g. E[] & ((A|B)|C)
+        // To: ((E[]&A)|B) | C
         if (leftTypeDesc.kind == SyntaxKind.UNION_TYPE_DESC) {
             return unionTypeDesc.replace(unionTypeDesc.leftTypeDesc,
                     replaceLeftMostUnionWithAIntersection(typeDesc, bitwiseAndToken,
                             (STUnionTypeDescriptorNode) leftTypeDesc));
         }
 
-        // e.g. D[] & ((A&C)|D)
+        // e.g. E[] & ((A&B)|C)
+        // To: ((E[]&A)&B) | C
         if (leftTypeDesc.kind == SyntaxKind.INTERSECTION_TYPE_DESC) {
             return unionTypeDesc.replace(unionTypeDesc.leftTypeDesc, 
                     replaceLeftMostIntersectionWithAIntersection(typeDesc, bitwiseAndToken,
                             (STIntersectionTypeDescriptorNode) leftTypeDesc));
         }
 
-        // e.g. D[] & (A|C)
+        // e.g. E[] & (A|B)
+        // To: (E[]&A) | B
         leftTypeDesc = createIntersectionTypeDesc(typeDesc, bitwiseAndToken, leftTypeDesc);
         return unionTypeDesc.replace(unionTypeDesc.leftTypeDesc, leftTypeDesc);
     }
@@ -16162,14 +16167,16 @@ public class BallerinaParser extends AbstractParser {
                                                                 STIntersectionTypeDescriptorNode intersectionTypeDesc) {
         STNode leftTypeDesc = intersectionTypeDesc.leftTypeDesc;
 
-        // e.g. D[] & ((A&C)&D)
+        // e.g. E[] & ((A&B)&C)
+        // To: (E[]&A)&B) & C
         if (leftTypeDesc.kind == SyntaxKind.INTERSECTION_TYPE_DESC) {
             return intersectionTypeDesc.replace(intersectionTypeDesc.leftTypeDesc,
                     replaceLeftMostIntersectionWithAIntersection(typeDesc, bitwiseAndToken,
                             (STIntersectionTypeDescriptorNode) leftTypeDesc));
         }
 
-        // e.g. D[] & (A&B)
+        // e.g. E[] & (A&B)
+        // To: (E[]&A) & B
         leftTypeDesc = createIntersectionTypeDesc(typeDesc, bitwiseAndToken, leftTypeDesc);
         return intersectionTypeDesc.replace(intersectionTypeDesc.leftTypeDesc, leftTypeDesc);
     }
