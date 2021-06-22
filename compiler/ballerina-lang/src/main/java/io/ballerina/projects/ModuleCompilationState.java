@@ -255,7 +255,7 @@ enum ModuleCompilationState {
 
         @Override
         void compile(ModuleContext moduleContext, CompilerContext compilerContext) {
-            // Do nothing
+            ModuleContext.cachePackageSymbol(moduleContext, compilerContext);
         }
 
         @Override

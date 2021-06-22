@@ -435,14 +435,19 @@ class ModuleContext {
     }
 
     static void loadPackageSymbolInternal(ModuleContext moduleContext, CompilerContext compilerContext) {
-        org.wso2.ballerinalang.compiler.PackageCache packageCache =
-                org.wso2.ballerinalang.compiler.PackageCache.getInstance(compilerContext);
         BIRPackageSymbolEnter birPackageSymbolEnter = BIRPackageSymbolEnter.getInstance(compilerContext);
 
         PackageID moduleCompilationId = moduleContext.descriptor().moduleCompilationId();
         moduleContext.bPackageSymbol = birPackageSymbolEnter.definePackage(moduleCompilationId, moduleContext.birBytes);
         moduleContext.bPackageSymbol.exported = moduleContext.isExported();
         moduleContext.bPackageSymbol.descriptor = moduleContext.descriptor();
+        cachePackageSymbol(moduleContext, compilerContext);
+    }
+    
+    static void cachePackageSymbol(ModuleContext moduleContext, CompilerContext compilerContext) {
+        org.wso2.ballerinalang.compiler.PackageCache packageCache =
+                org.wso2.ballerinalang.compiler.PackageCache.getInstance(compilerContext);
+        PackageID moduleCompilationId = moduleContext.descriptor().moduleCompilationId();
         packageCache.putSymbol(moduleCompilationId, moduleContext.bPackageSymbol);
     }
 
